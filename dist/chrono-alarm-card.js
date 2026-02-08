@@ -154,7 +154,7 @@ function t(t,e,i,s){var o,n=arguments.length,a=n<3?e:null===s?s=Object.getOwnPro
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    justify-content: center;
+    justify-content: flex-end;
     margin-bottom: 16px;
     width: 100%;
     max-width: 600px;
