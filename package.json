@@ -1,0 +1,31 @@
+{
+  "name": "chrono-alarm-card",
+  "version": "0.1.0",
+  "description": "A clock and multi-alarm card for Home Assistant",
+  "main": "dist/chrono-alarm-card.js",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c --watch",
+    "lint": "eslint src/**/*.ts"
+  },
+  "keywords": [
+    "home-assistant",
+    "lovelace",
+    "custom-card",
+    "alarm-clock",
+    "hacs"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "lit": "^3.2.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.0",
+    "rollup": "^4.28.0",
+    "tslib": "^2.8.0",
+    "typescript": "^5.7.0"
+  }
+}
