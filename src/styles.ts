@@ -6,11 +6,15 @@ import { css } from 'lit';
 export const cardStyles = css`
   :host {
     display: block;
+    margin: 0 !important;
   }
 
   ha-card {
     height: 100%;
     overflow: hidden;
+    margin: 0;
+    border: none;
+    box-shadow: none;
   }
 
   .chrono-card {
@@ -20,19 +24,21 @@ export const cardStyles = css`
     justify-content: center;
     padding: 24px;
     min-height: 300px;
+    box-sizing: border-box;
     background: var(--ha-card-background, var(--card-background-color));
     color: var(--primary-text-color);
     position: relative;
   }
 
   .chrono-card.panel {
-    min-height: 100vh;
     height: 100vh;
-    padding: 12px 20px;
-    --chrono-clock-size: min(45vh, 40vw);
-    --chrono-flip-width: min(28vh, 18vw);
-    --chrono-flip-height: min(42vh, 26vw);
-    --chrono-flip-font-size: min(34vh, 21vw);
+    min-height: 0;
+    padding: 8px 16px;
+    overflow: hidden;
+    --chrono-clock-size: min(70vh, 60vw);
+    --chrono-flip-width: min(40vh, 26vw);
+    --chrono-flip-height: min(60vh, 38vw);
+    --chrono-flip-font-size: min(48vh, 30vw);
   }
 
   /* -- Clock group (wraps top bar + clock + info to share width) ---- */
