@@ -398,7 +398,7 @@ export const flipClockStyles = css`
     position: relative;
     width: var(--chrono-flip-width, 64px);
     height: var(--chrono-flip-height, 100px);
-    perspective: 300px;
+    perspective: calc(var(--chrono-flip-height, 100px) * 6);
     border-radius: 8px;
     overflow: visible;
     font-size: var(--chrono-flip-font-size, 80px);
