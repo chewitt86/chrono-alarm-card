@@ -229,8 +229,17 @@ export const cardStyles = css`
     border-radius: 18px;
     font-size: 0.85rem;
     color: var(--primary-text-color);
-    cursor: default;
+    cursor: pointer;
     white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.1s, opacity 0.1s;
+  }
+
+  .chip:active {
+    transform: scale(0.93);
+    opacity: 0.8;
   }
 
   .chip ha-icon {
@@ -381,6 +390,7 @@ export const flipClockStyles = css`
   .flip-group {
     display: flex;
     gap: 4px;
+    position: relative;
   }
 
   /* -- Individual digit ---------------------------------------------- */
@@ -395,6 +405,7 @@ export const flipClockStyles = css`
     font-family: var(--chrono-flip-font, 'Roboto Mono', 'Courier New', monospace);
     font-weight: 700;
     color: var(--chrono-flip-color, #e0e0e0);
+    border: 1px solid rgba(255, 255, 255, 0.12);
   }
 
   .flip-face {
@@ -420,7 +431,7 @@ export const flipClockStyles = css`
 
   .upper {
     top: 0;
-    background: var(--chrono-flip-bg, #1a1a2e);
+    background: var(--chrono-flip-bg, #2a2a2a);
     border-radius: 8px 8px 0 0;
     border-bottom: 1px solid rgba(0, 0, 0, 0.25);
     z-index: 1;
@@ -432,7 +443,7 @@ export const flipClockStyles = css`
 
   .lower {
     bottom: 0;
-    background: var(--chrono-flip-bg-lower, #16162a);
+    background: var(--chrono-flip-bg-lower, #242424);
     border-radius: 0 0 8px 8px;
     z-index: 1;
   }
@@ -458,7 +469,7 @@ export const flipClockStyles = css`
 
   .fold-upper {
     top: 0;
-    background: var(--chrono-flip-bg, #1a1a2e);
+    background: var(--chrono-flip-bg, #2a2a2a);
     border-radius: 8px 8px 0 0;
     transform-origin: bottom center;
     z-index: 3;
@@ -471,7 +482,7 @@ export const flipClockStyles = css`
 
   .fold-lower {
     top: 50%;
-    background: var(--chrono-flip-bg-lower, #16162a);
+    background: var(--chrono-flip-bg-lower, #242424);
     border-radius: 0 0 8px 8px;
     transform-origin: top center;
     transform: rotateX(90deg);
@@ -534,20 +545,23 @@ export const flipClockStyles = css`
 
   /* -- Period (AM/PM) ----------------------------------------------- */
   .flip-period {
-    font-size: calc(var(--chrono-flip-font-size, 80px) * 0.3);
+    position: absolute;
+    top: -2px;
+    left: 0;
+    font-size: calc(var(--chrono-flip-font-size, 80px) * 0.16);
     font-family: var(--chrono-flip-font, 'Roboto Mono', 'Courier New', monospace);
     color: var(--chrono-flip-color, #e0e0e0);
-    margin-left: 8px;
-    opacity: 0.6;
-    align-self: flex-end;
-    padding-bottom: 8px;
+    opacity: 0.7;
+    line-height: 1;
+    transform: translateY(-100%);
+    pointer-events: none;
   }
 
   /* -- Shadow / depth ----------------------------------------------- */
   .flip-unit {
     box-shadow:
-      0 2px 6px rgba(0, 0, 0, 0.25),
-      0 1px 2px rgba(0, 0, 0, 0.15);
+      0 2px 6px rgba(0, 0, 0, 0.3),
+      0 1px 2px rgba(0, 0, 0, 0.2);
   }
 `;
 
@@ -811,13 +825,29 @@ export const editorStyles = css`
 
   .alarm-block-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 8px;
     margin-bottom: 8px;
     font-weight: 500;
   }
 
+  .handle {
+    cursor: grab;
+    opacity: 0.5;
+    display: flex;
+    align-items: center;
+  }
+
+  .handle:hover {
+    opacity: 1;
+  }
+
+  .handle ha-icon {
+    --mdc-icon-size: 20px;
+  }
+
   .remove-btn {
+    margin-left: auto;
     background: none;
     border: none;
     color: var(--error-color, #db4437);
@@ -852,31 +882,6 @@ export const editorStyles = css`
     display: none !important;
   }
 
-  .reorder-btns {
-    display: flex;
-    gap: 2px;
-    margin-left: auto;
-  }
-
-  .reorder-btns button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 2px 6px;
-    font-size: 0.9rem;
-    opacity: 0.5;
-    color: var(--primary-text-color);
-  }
-
-  .reorder-btns button:hover {
-    opacity: 1;
-  }
-
-  .reorder-btns button:disabled {
-    opacity: 0.15;
-    cursor: default;
-  }
-
   .color-row {
     display: flex;
     align-items: center;
@@ -907,5 +912,46 @@ export const editorStyles = css`
     background: transparent;
     color: var(--primary-text-color);
     font-size: 0.85rem;
+  }
+
+  .action-details {
+    margin-top: 8px;
+    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .action-details summary {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    opacity: 0.7;
+    background: var(--secondary-background-color, rgba(0, 0, 0, 0.03));
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .action-details summary:hover {
+    opacity: 1;
+  }
+
+  .action-details-content {
+    padding: 8px 12px 12px;
+  }
+
+  .action-group {
+    margin-bottom: 12px;
+  }
+
+  .action-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .action-group-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    opacity: 0.6;
+    margin-bottom: 4px;
   }
 `;

@@ -1,14 +1,23 @@
 import { LitElement, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
 import { editorStyles } from './styles';
 import {
   HomeAssistant,
   ChronoAlarmCardConfig,
+  ActionConfig,
+  ActionType,
   AlarmConfig,
   ActionToggleConfig,
   ChipConfig,
 } from './types';
-import { DEFAULT_CONFIG, MAX_ALARMS } from './constants';
+import {
+  DEFAULT_CONFIG,
+  DEFAULT_TAP_ACTION,
+  DEFAULT_DOUBLE_TAP_ACTION,
+  DEFAULT_HOLD_ACTION,
+  MAX_ALARMS,
+} from './constants';
 import { fireEvent } from './utils';
 
 @customElement('chrono-alarm-card-editor')
@@ -20,6 +29,23 @@ export class ChronoAlarmCardEditor extends LitElement {
 
   setConfig(config: ChronoAlarmCardConfig): void {
     this._config = { ...DEFAULT_CONFIG, ...config } as ChronoAlarmCardConfig;
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    void this._loadComponents();
+  }
+
+  /**
+   * Force HA to load lazy editor components (ha-entity-picker, etc.)
+   * Without this, pickers may not render on first editor open.
+   */
+  private async _loadComponents(): Promise<void> {
+    const helpers = await (window as any).loadCardHelpers?.();
+    if (helpers) {
+      const card = await helpers.createCardElement({ type: 'entity', entity: 'sun.sun' });
+      if (card) card.hass = this.hass;
+    }
   }
 
   private _dispatch(): void {
@@ -108,13 +134,134 @@ export class ChronoAlarmCardEditor extends LitElement {
     this._dispatch();
   }
 
-  private _moveChip(index: number, direction: -1 | 1): void {
+  private _chipMoved(e: CustomEvent): void {
+    const { oldIndex, newIndex } = e.detail;
     const chips = [...(this._config.chips ?? [])];
-    const target = index + direction;
-    if (target < 0 || target >= chips.length) return;
-    [chips[index], chips[target]] = [chips[target], chips[index]];
+    const [moved] = chips.splice(oldIndex, 1);
+    chips.splice(newIndex, 0, moved);
     this._config = { ...this._config, chips };
     this._dispatch();
+  }
+
+  private _chipActionChanged(
+    chipIndex: number,
+    gesture: 'tap_action' | 'double_tap_action' | 'hold_action',
+    key: keyof ActionConfig,
+    value: unknown,
+  ): void {
+    const chips = [...(this._config.chips ?? [])];
+    const chip = { ...chips[chipIndex] };
+    const defaults: Record<string, ActionConfig> = {
+      tap_action: DEFAULT_TAP_ACTION,
+      double_tap_action: DEFAULT_DOUBLE_TAP_ACTION,
+      hold_action: DEFAULT_HOLD_ACTION,
+    };
+    const current = { ...(chip[gesture] ?? defaults[gesture]) };
+
+    if (key === 'action') {
+      // When action type changes, clear irrelevant fields
+      current.action = value as ActionType;
+      delete current.service;
+      delete current.service_data;
+      delete current.navigation_path;
+      delete current.url_path;
+    } else {
+      (current as any)[key] = value;
+    }
+
+    chip[gesture] = current;
+    chips[chipIndex] = chip;
+    this._config = { ...this._config, chips };
+    this._dispatch();
+  }
+
+  private _renderActionEditor(
+    chipIndex: number,
+    gesture: 'tap_action' | 'double_tap_action' | 'hold_action',
+    label: string,
+    defaultAction: ActionConfig,
+  ) {
+    const chip = (this._config.chips ?? [])[chipIndex];
+    if (!chip) return nothing;
+    const action = chip[gesture] ?? defaultAction;
+
+    return html`
+      <div class="action-group">
+        <div class="action-group-label">${label}</div>
+        <div class="editor-field">
+          <ha-select
+            label="Action"
+            .value=${action.action}
+            @selected=${(e: CustomEvent) =>
+              this._chipActionChanged(chipIndex, gesture, 'action', (e.target as any).value)}
+            @closed=${(e: Event) => e.stopPropagation()}
+            fixedMenuPosition
+            naturalMenuWidth
+          >
+            <mwc-list-item value="none">None</mwc-list-item>
+            <mwc-list-item value="toggle">Toggle</mwc-list-item>
+            <mwc-list-item value="more-info">More info</mwc-list-item>
+            <mwc-list-item value="call-service">Call service</mwc-list-item>
+            <mwc-list-item value="navigate">Navigate</mwc-list-item>
+            <mwc-list-item value="url">URL</mwc-list-item>
+          </ha-select>
+        </div>
+
+        ${action.action === 'call-service'
+          ? html`
+              <div class="editor-field">
+                <ha-textfield
+                  label="Service (e.g. light.toggle)"
+                  .value=${action.service ?? ''}
+                  @input=${(e: InputEvent) =>
+                    this._chipActionChanged(chipIndex, gesture, 'service', (e.target as any).value)}
+                ></ha-textfield>
+              </div>
+              <div class="editor-field">
+                <ha-textfield
+                  label="Service data (JSON, optional)"
+                  .value=${action.service_data ? JSON.stringify(action.service_data) : ''}
+                  @input=${(e: InputEvent) => {
+                    const raw = (e.target as any).value;
+                    try {
+                      const parsed = raw ? JSON.parse(raw) : undefined;
+                      this._chipActionChanged(chipIndex, gesture, 'service_data', parsed);
+                    } catch {
+                      // Don't update until valid JSON
+                    }
+                  }}
+                ></ha-textfield>
+              </div>
+            `
+          : nothing}
+
+        ${action.action === 'navigate'
+          ? html`
+              <div class="editor-field">
+                <ha-textfield
+                  label="Navigation path (e.g. /lovelace/0)"
+                  .value=${action.navigation_path ?? ''}
+                  @input=${(e: InputEvent) =>
+                    this._chipActionChanged(chipIndex, gesture, 'navigation_path', (e.target as any).value)}
+                ></ha-textfield>
+              </div>
+            `
+          : nothing}
+
+        ${action.action === 'url'
+          ? html`
+              <div class="editor-field">
+                <ha-textfield
+                  label="URL"
+                  .value=${action.url_path ?? ''}
+                  @input=${(e: InputEvent) =>
+                    this._chipActionChanged(chipIndex, gesture, 'url_path', (e.target as any).value)}
+                ></ha-textfield>
+              </div>
+            `
+          : nothing}
+      </div>
+    `;
   }
 
   /* ---------------------------------------------------------------- */
@@ -142,23 +289,18 @@ export class ChronoAlarmCardEditor extends LitElement {
       <div class="editor-section">
         <div class="section-title">Chips</div>
 
-        ${chips.map(
-          (chip, i) => html`
+        <ha-sortable
+          handle-selector=".handle"
+          @item-moved=${this._chipMoved}
+        >
+          <div>
+            ${repeat(chips, (_chip, i) => i, (chip, i) => html`
             <div class="alarm-block">
               <div class="alarm-block-header">
-                <span>Chip ${i + 1}</span>
-                <div class="reorder-btns">
-                  <button
-                    ?disabled=${i === 0}
-                    @click=${() => this._moveChip(i, -1)}
-                    title="Move up"
-                  >&#9650;</button>
-                  <button
-                    ?disabled=${i === chips.length - 1}
-                    @click=${() => this._moveChip(i, 1)}
-                    title="Move down"
-                  >&#9660;</button>
+                <div class="handle">
+                  <ha-icon icon="mdi:drag"></ha-icon>
                 </div>
+                <span>Chip ${i + 1}</span>
                 <button class="remove-btn" @click=${() => this._removeChip(i)}>
                   Remove
                 </button>
@@ -254,9 +396,19 @@ export class ChronoAlarmCardEditor extends LitElement {
                     this._chipChanged(i, 'color_off', (e.target as any).value)}
                 />
               </div>
+
+              <details class="action-details">
+                <summary>Actions</summary>
+                <div class="action-details-content">
+                  ${this._renderActionEditor(i, 'tap_action', 'Tap action', DEFAULT_TAP_ACTION)}
+                  ${this._renderActionEditor(i, 'double_tap_action', 'Double-tap action', DEFAULT_DOUBLE_TAP_ACTION)}
+                  ${this._renderActionEditor(i, 'hold_action', 'Hold action', DEFAULT_HOLD_ACTION)}
+                </div>
+              </details>
             </div>
-          `,
-        )}
+            `)}
+          </div>
+        </ha-sortable>
 
         <button class="add-btn" @click=${this._addChip}>+ Add Chip</button>
       </div>

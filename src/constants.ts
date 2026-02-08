@@ -1,4 +1,4 @@
-import { ChronoAlarmCardConfig, DayOfWeek } from './types';
+import { ActionConfig, ChronoAlarmCardConfig, DayOfWeek } from './types';
 
 export const CARD_TAG = 'chrono-alarm-card';
 export const EDITOR_TAG = 'chrono-alarm-card-editor';
@@ -34,6 +34,10 @@ export const JS_DAY_MAP: DayOfWeek[] = [
 
 export const MAX_ALARMS = 5;
 export const CLOCK_TICK_MS = 1000;
+
+export const DEFAULT_TAP_ACTION: ActionConfig = { action: 'toggle' };
+export const DEFAULT_DOUBLE_TAP_ACTION: ActionConfig = { action: 'none' };
+export const DEFAULT_HOLD_ACTION: ActionConfig = { action: 'more-info' };
 
 export const DEFAULT_CONFIG: Omit<ChronoAlarmCardConfig, 'type'> = {
   clock_style: 'digital',

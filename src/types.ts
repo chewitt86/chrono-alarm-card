@@ -43,6 +43,16 @@ export interface ActionToggleConfig {
   show_icon?: boolean;
 }
 
+export type ActionType = 'none' | 'toggle' | 'more-info' | 'call-service' | 'navigate' | 'url';
+
+export interface ActionConfig {
+  action: ActionType;
+  service?: string;
+  service_data?: Record<string, unknown>;
+  navigation_path?: string;
+  url_path?: string;
+}
+
 export interface ChipConfig {
   entity: string;
   icon?: string;
@@ -52,6 +62,9 @@ export interface ChipConfig {
   show_icon?: boolean;
   color_on?: string;
   color_off?: string;
+  tap_action?: ActionConfig;
+  double_tap_action?: ActionConfig;
+  hold_action?: ActionConfig;
 }
 
 export interface SnoozeConfig {

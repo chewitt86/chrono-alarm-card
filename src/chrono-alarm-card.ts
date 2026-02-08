@@ -5,11 +5,15 @@ import {
   HomeAssistant,
   HassEntity,
   ChronoAlarmCardConfig,
+  ActionConfig,
   AlarmConfig,
   ChipConfig,
 } from './types';
 import {
   DEFAULT_CONFIG,
+  DEFAULT_TAP_ACTION,
+  DEFAULT_DOUBLE_TAP_ACTION,
+  DEFAULT_HOLD_ACTION,
   CLOCK_TICK_MS,
   JS_DAY_MAP,
   EDITOR_TAG,
@@ -72,6 +76,14 @@ export class ChronoAlarmCard extends LitElement {
   private _snoozeTimeout?: number;
   private _resizeObserver?: ResizeObserver;
 
+  // Gesture state for chip interactions
+  private _holdTimer?: number;
+  private _tapTimer?: number;
+  private _tapCount = 0;
+  private _held = false;
+  private _touchStartX = 0;
+  private _touchStartY = 0;
+
   /* ---------------------------------------------------------------- */
   /*  HA lifecycle                                                     */
   /* ---------------------------------------------------------------- */
@@ -110,6 +122,8 @@ export class ChronoAlarmCard extends LitElement {
     super.disconnectedCallback();
     if (this._alarmCheckInterval) clearInterval(this._alarmCheckInterval);
     if (this._snoozeTimeout) clearTimeout(this._snoozeTimeout);
+    if (this._holdTimer) clearTimeout(this._holdTimer);
+    if (this._tapTimer) clearTimeout(this._tapTimer);
     this._resizeObserver?.disconnect();
   }
 
@@ -257,10 +271,116 @@ export class ChronoAlarmCard extends LitElement {
   private _toggleAction(entityId: string): void {
     const entity = this.hass.states[entityId];
     if (!entity) return;
-    const service = entity.state === 'on' ? 'turn_off' : 'turn_on';
-    this.hass.callService('input_boolean', service, {
+    this.hass.callService('homeassistant', 'toggle', {}, {
       entity_id: entityId,
     });
+  }
+
+  /* ---------------------------------------------------------------- */
+  /*  Chip gesture handling                                            */
+  /* ---------------------------------------------------------------- */
+
+  private _chipPointerDown(chip: ChipConfig, e: Event): void {
+    this._held = false;
+    if (e instanceof TouchEvent) {
+      const touch = e.touches[0];
+      this._touchStartX = touch.clientX;
+      this._touchStartY = touch.clientY;
+    }
+    this._holdTimer = window.setTimeout(() => {
+      this._held = true;
+    }, 500);
+  }
+
+  private _chipTouchMove(e: TouchEvent): void {
+    if (!this._holdTimer) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - this._touchStartX;
+    const dy = touch.clientY - this._touchStartY;
+    if (Math.sqrt(dx * dx + dy * dy) > 10) {
+      clearTimeout(this._holdTimer);
+      this._holdTimer = undefined;
+    }
+  }
+
+  private _chipPointerUp(chip: ChipConfig, e: Event): void {
+    if (this._holdTimer) {
+      clearTimeout(this._holdTimer);
+      this._holdTimer = undefined;
+    }
+
+    const entityId = chip.entity;
+
+    if (this._held) {
+      this._held = false;
+      const holdAction = chip.hold_action ?? DEFAULT_HOLD_ACTION;
+      this._executeAction(holdAction, entityId);
+      return;
+    }
+
+    const doubleTapAction = chip.double_tap_action ?? DEFAULT_DOUBLE_TAP_ACTION;
+
+    // If double-tap is 'none', fire tap immediately
+    if (doubleTapAction.action === 'none') {
+      const tapAction = chip.tap_action ?? DEFAULT_TAP_ACTION;
+      this._executeAction(tapAction, entityId);
+      return;
+    }
+
+    // Otherwise, use 250ms window to distinguish single from double tap
+    this._tapCount++;
+    if (this._tapCount === 1) {
+      this._tapTimer = window.setTimeout(() => {
+        // Single tap
+        const tapAction = chip.tap_action ?? DEFAULT_TAP_ACTION;
+        this._executeAction(tapAction, entityId);
+        this._tapCount = 0;
+      }, 250);
+    } else {
+      // Double tap
+      clearTimeout(this._tapTimer);
+      this._tapTimer = undefined;
+      this._tapCount = 0;
+      this._executeAction(doubleTapAction, entityId);
+    }
+  }
+
+  private _executeAction(action: ActionConfig, entityId: string): void {
+    switch (action.action) {
+      case 'none':
+        break;
+
+      case 'toggle':
+        this._toggleAction(entityId);
+        break;
+
+      case 'more-info':
+        fireEvent(this, 'hass-more-info', { entityId });
+        break;
+
+      case 'call-service': {
+        if (!action.service) break;
+        const [domain, service] = action.service.split('.', 2);
+        if (!domain || !service) break;
+        this.hass.callService(domain, service, action.service_data ?? {}, {
+          entity_id: entityId,
+        });
+        break;
+      }
+
+      case 'navigate':
+        if (action.navigation_path) {
+          history.pushState(null, '', action.navigation_path);
+          window.dispatchEvent(new Event('location-changed'));
+        }
+        break;
+
+      case 'url':
+        if (action.url_path) {
+          window.open(action.url_path, '_blank');
+        }
+        break;
+    }
   }
 
   /* ---------------------------------------------------------------- */
@@ -373,7 +493,16 @@ export class ChronoAlarmCard extends LitElement {
             : '';
 
           return html`
-            <div class="chip" style=${chipStyle}>
+            <div
+              class="chip"
+              style=${chipStyle}
+              @mousedown=${(e: MouseEvent) => this._chipPointerDown(chip, e)}
+              @mouseup=${(e: MouseEvent) => this._chipPointerUp(chip, e)}
+              @touchstart=${(e: TouchEvent) => this._chipPointerDown(chip, e)}
+              @touchend=${(e: TouchEvent) => { e.preventDefault(); this._chipPointerUp(chip, e); }}
+              @touchmove=${(e: TouchEvent) => this._chipTouchMove(e)}
+              @contextmenu=${(e: Event) => e.preventDefault()}
+            >
               ${showIcon && icon
                 ? html`<ha-icon icon=${icon}></ha-icon>`
                 : nothing}
