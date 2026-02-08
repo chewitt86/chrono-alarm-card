@@ -32,11 +32,14 @@ function t(t,e,i,s){var o,n=arguments.length,a=n<3?e:null===s?s=Object.getOwnPro
 
   /* -- Top bar (alarm icon left, chips right) ----------------------- */
   .top-bar {
+    position: absolute;
+    top: 12px;
+    left: 20px;
+    right: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 100%;
-    flex-shrink: 0;
+    z-index: 5;
   }
 
   .alarm-menu-btn {
@@ -74,6 +77,7 @@ function t(t,e,i,s){var o,n=arguments.length,a=n<3?e:null===s?s=Object.getOwnPro
     align-items: center;
     justify-content: center;
     min-height: 0;
+    width: 100%;
   }
 
   /* -- Alarms panel (overlay) --------------------------------------- */
@@ -89,15 +93,18 @@ function t(t,e,i,s){var o,n=arguments.length,a=n<3?e:null===s?s=Object.getOwnPro
 
   /* -- Info section (date, day, weather) ----------------------------- */
   .info-section {
+    position: absolute;
+    bottom: 12px;
+    left: 20px;
+    right: 20px;
     display: flex;
     gap: 16px;
     align-items: center;
     font-size: clamp(0.9rem, 2.5vh, 1.6rem);
     opacity: 0.75;
-    margin-bottom: 8px;
     flex-wrap: wrap;
     justify-content: center;
-    flex-shrink: 0;
+    z-index: 5;
   }
 
   .info-section .separator {
