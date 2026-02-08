@@ -63,6 +63,7 @@ export class ChronoAlarmCard extends LitElement {
   @state() private _showSnoozeDialog = false;
   @state() private _activeAlarmIndex = -1;
   @state() private _snoozeCount = 0;
+  @state() private _showAlarmsPanel = false;
 
   /** Set of alarm indices that have already fired in the current minute */
   private _firedAlarms = new Set<number>();
@@ -162,6 +163,7 @@ export class ChronoAlarmCard extends LitElement {
   /* ---------------------------------------------------------------- */
 
   private _openAlarmDialog(index: number): void {
+    this._showAlarmsPanel = false;
     this._editingAlarmIndex = index;
     this._showAlarmDialog = true;
   }
@@ -222,15 +224,70 @@ export class ChronoAlarmCard extends LitElement {
     return html`
       <ha-card>
         <div class="chrono-card ${mode}">
-          ${this._renderChips()}
+          ${this._renderTopBar()}
           ${this._renderClock()}
           ${this._renderInfo()}
-          ${this._renderAlarms()}
           ${this._renderToggles()}
+          ${this._renderAlarmsPanel()}
           ${this._renderAlarmDialog()}
           ${this._renderSnoozeDialog()}
         </div>
       </ha-card>
+    `;
+  }
+
+  private _getNextAlarmCountdown(): string {
+    const alarms = this._config.alarms;
+    if (!alarms?.length) return '';
+
+    let shortest: { hours: number; minutes: number } | null = null;
+
+    for (const alarm of alarms) {
+      const enabledEntity = this.hass.states[alarm.enabled_entity];
+      if (!enabledEntity || enabledEntity.state !== 'on') continue;
+      const timeEntity = this.hass.states[alarm.time_entity];
+      if (!timeEntity) continue;
+      const parsed = parseAlarmTime(timeEntity.state);
+      if (!parsed) continue;
+      const days = getAlarmDays(alarm, this.hass);
+      const countdown = getTimeUntilAlarm(parsed.hours, parsed.minutes, days);
+      if (!countdown) continue;
+      const totalMins = countdown.hours * 60 + countdown.minutes;
+      if (!shortest || totalMins < (shortest.hours * 60 + shortest.minutes)) {
+        shortest = countdown;
+      }
+    }
+
+    return shortest ? formatCountdown(shortest.hours, shortest.minutes) : '';
+  }
+
+  private _toggleAlarmsPanel(): void {
+    this._showAlarmsPanel = !this._showAlarmsPanel;
+  }
+
+  private _renderTopBar() {
+    const alarms = this._config.alarms;
+    const hasAlarms = alarms && alarms.length > 0;
+    const nextAlarm = hasAlarms ? this._getNextAlarmCountdown() : '';
+
+    return html`
+      <div class="top-bar">
+        <div class="top-bar-left">
+          ${hasAlarms
+            ? html`
+                <button class="alarm-menu-btn" @click=${this._toggleAlarmsPanel}>
+                  <ha-icon icon="mdi:alarm"></ha-icon>
+                  ${nextAlarm
+                    ? html`<span class="next-alarm-badge">${nextAlarm}</span>`
+                    : nothing}
+                </button>
+              `
+            : nothing}
+        </div>
+        <div class="top-bar-right">
+          ${this._renderChips()}
+        </div>
+      </div>
     `;
   }
 
@@ -334,54 +391,61 @@ export class ChronoAlarmCard extends LitElement {
     return html`<div class="info-section">${parts}</div>`;
   }
 
-  private _renderAlarms() {
+  private _renderAlarmsPanel() {
+    if (!this._showAlarmsPanel) return nothing;
     const alarms = this._config.alarms;
     if (!alarms?.length) return nothing;
     const format = this._config.time_format ?? '12h';
 
     return html`
-      <div class="alarms-section">
-        <div class="alarms-header">Alarms</div>
-        ${alarms.map((alarm, i) => {
-          const timeEntity = this.hass.states[alarm.time_entity];
-          const enabledEntity = this.hass.states[alarm.enabled_entity];
-          const isEnabled = enabledEntity?.state === 'on';
-          const timeStr = timeEntity
-            ? formatAlarmTime(timeEntity.state, format)
-            : '--:--';
-          const days = getAlarmDays(alarm, this.hass);
-          const daysStr = formatDaysShort(days);
-          const name = alarm.name || `Alarm ${i + 1}`;
+      <div class="overlay" @click=${this._toggleAlarmsPanel}>
+        <div class="dialog-card alarms-panel" @click=${(e: Event) => e.stopPropagation()}>
+          <div class="dialog-title">Alarms</div>
+          <div class="alarms-list">
+            ${alarms.map((alarm, i) => {
+              const timeEntity = this.hass.states[alarm.time_entity];
+              const enabledEntity = this.hass.states[alarm.enabled_entity];
+              const isEnabled = enabledEntity?.state === 'on';
+              const timeStr = timeEntity
+                ? formatAlarmTime(timeEntity.state, format)
+                : '--:--';
+              const days = getAlarmDays(alarm, this.hass);
+              const daysStr = formatDaysShort(days);
+              const name = alarm.name || `Alarm ${i + 1}`;
 
-          // Calculate countdown
-          let countdownStr = '';
-          if (isEnabled && timeEntity) {
-            const parsed = parseAlarmTime(timeEntity.state);
-            if (parsed) {
-              const countdown = getTimeUntilAlarm(parsed.hours, parsed.minutes, days);
-              if (countdown) {
-                countdownStr = formatCountdown(countdown.hours, countdown.minutes);
+              let countdownStr = '';
+              if (isEnabled && timeEntity) {
+                const parsed = parseAlarmTime(timeEntity.state);
+                if (parsed) {
+                  const countdown = getTimeUntilAlarm(parsed.hours, parsed.minutes, days);
+                  if (countdown) {
+                    countdownStr = formatCountdown(countdown.hours, countdown.minutes);
+                  }
+                }
               }
-            }
-          }
 
-          return html`
-            <div
-              class="alarm-item ${isEnabled ? '' : 'disabled'}"
-              @click=${() => this._openAlarmDialog(i)}
-            >
-              <span class="alarm-name">${name}</span>
-              <span class="alarm-time">${timeStr}</span>
-              <span class="alarm-days">${daysStr}</span>
-              ${countdownStr
-                ? html`<span class="alarm-countdown">${countdownStr}</span>`
-                : nothing}
-              <span class="alarm-toggle" @click=${(e: Event) => this._toggleAlarmEnabled(alarm, e)}>
-                <ha-switch .checked=${isEnabled}></ha-switch>
-              </span>
-            </div>
-          `;
-        })}
+              return html`
+                <div
+                  class="alarm-item ${isEnabled ? '' : 'disabled'}"
+                  @click=${() => this._openAlarmDialog(i)}
+                >
+                  <span class="alarm-name">${name}</span>
+                  <span class="alarm-time">${timeStr}</span>
+                  <span class="alarm-days">${daysStr}</span>
+                  ${countdownStr
+                    ? html`<span class="alarm-countdown">${countdownStr}</span>`
+                    : nothing}
+                  <span class="alarm-toggle" @click=${(e: Event) => this._toggleAlarmEnabled(alarm, e)}>
+                    <ha-switch .checked=${isEnabled}></ha-switch>
+                  </span>
+                </div>
+              `;
+            })}
+          </div>
+          <div class="dialog-actions">
+            <button class="btn-save" @click=${this._toggleAlarmsPanel}>Done</button>
+          </div>
+        </div>
       </div>
     `;
   }

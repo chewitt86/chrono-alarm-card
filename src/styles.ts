@@ -27,16 +27,76 @@ export const cardStyles = css`
 
   .chrono-card.panel {
     min-height: 100vh;
-    padding: 32px;
-    --chrono-clock-size: clamp(64px, 14vw, 200px);
-    --chrono-flip-width: clamp(48px, 10vw, 140px);
-    --chrono-flip-height: clamp(72px, 15vw, 210px);
-    --chrono-flip-font-size: clamp(58px, 12vw, 170px);
+    padding: 16px 24px;
+    --chrono-clock-size: clamp(80px, 22vw, 280px);
+    --chrono-flip-width: clamp(56px, 14vw, 180px);
+    --chrono-flip-height: clamp(84px, 22vw, 270px);
+    --chrono-flip-font-size: clamp(68px, 17vw, 220px);
+  }
+
+  /* -- Top bar (alarm icon left, chips right) ----------------------- */
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    position: absolute;
+    top: 12px;
+    left: 0;
+    right: 0;
+    padding: 0 20px;
+    box-sizing: border-box;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .top-bar-left,
+  .top-bar-right {
+    pointer-events: auto;
+  }
+
+  .alarm-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--secondary-background-color, rgba(0, 0, 0, 0.06));
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    cursor: pointer;
+    color: var(--primary-text-color);
+    font-size: 0.85rem;
+    transition: background 0.2s;
+  }
+
+  .alarm-menu-btn:hover {
+    background: var(--primary-color, #03a9f4);
+    color: var(--text-primary-color, #fff);
+  }
+
+  .alarm-menu-btn ha-icon {
+    --mdc-icon-size: 20px;
+  }
+
+  .next-alarm-badge {
+    opacity: 0.7;
+    font-size: 0.8rem;
   }
 
   /* -- Clock section ------------------------------------------------ */
   .clock-section {
-    margin-bottom: 12px;
+    margin-bottom: 8px;
+  }
+
+  /* -- Alarms panel (overlay) --------------------------------------- */
+  .alarms-panel {
+    min-width: 360px;
+    max-width: 500px;
+  }
+
+  .alarms-list {
+    max-height: 60vh;
+    overflow-y: auto;
   }
 
   /* -- Info section (date, day, weather) ----------------------------- */
@@ -44,9 +104,9 @@ export const cardStyles = css`
     display: flex;
     gap: 16px;
     align-items: center;
-    font-size: clamp(0.9rem, 1.8vw, 1.4rem);
+    font-size: clamp(0.9rem, 2vw, 1.5rem);
     opacity: 0.75;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     flex-wrap: wrap;
     justify-content: center;
   }
@@ -158,11 +218,8 @@ export const cardStyles = css`
   .chips-section {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
     justify-content: flex-end;
-    margin-bottom: 16px;
-    width: 100%;
-    max-width: 600px;
   }
 
   .chip {
