@@ -35,10 +35,6 @@ export const cardStyles = css`
     min-height: 0;
     padding: 8px 16px;
     overflow: hidden;
-    --chrono-clock-size: min(70vh, 60vw);
-    --chrono-flip-width: min(40vh, 26vw);
-    --chrono-flip-height: min(60vh, 38vw);
-    --chrono-flip-font-size: min(48vh, 30vw);
   }
 
   /* -- Clock group (wraps top bar + clock + info to share width) ---- */

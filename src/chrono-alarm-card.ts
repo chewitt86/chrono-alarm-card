@@ -70,6 +70,7 @@ export class ChronoAlarmCard extends LitElement {
   private _lastCheckedMinute = -1;
   private _alarmCheckInterval?: number;
   private _snoozeTimeout?: number;
+  private _resizeObserver?: ResizeObserver;
 
   /* ---------------------------------------------------------------- */
   /*  HA lifecycle                                                     */
@@ -102,12 +103,67 @@ export class ChronoAlarmCard extends LitElement {
       () => this._checkAlarms(),
       CLOCK_TICK_MS,
     );
+    this._resizeObserver = new ResizeObserver(() => this._fitClock());
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
     if (this._alarmCheckInterval) clearInterval(this._alarmCheckInterval);
     if (this._snoozeTimeout) clearTimeout(this._snoozeTimeout);
+    this._resizeObserver?.disconnect();
+  }
+
+  protected firstUpdated(): void {
+    const card = this.renderRoot.querySelector('.chrono-card') as HTMLElement;
+    if (card) this._resizeObserver?.observe(card);
+    this._fitClock();
+  }
+
+  protected updated(): void {
+    this._fitClock();
+  }
+
+  /* ---------------------------------------------------------------- */
+  /*  Dynamic clock sizing                                             */
+  /* ---------------------------------------------------------------- */
+
+  private _fitClock(): void {
+    if (this._config?.mode !== 'panel') return;
+
+    const card = this.renderRoot.querySelector('.chrono-card') as HTMLElement;
+    if (!card) return;
+
+    const topBar = this.renderRoot.querySelector('.top-bar') as HTMLElement;
+    const info = this.renderRoot.querySelector('.info-section') as HTMLElement;
+
+    const cardH = card.clientHeight;
+    const cardW = card.clientWidth;
+    const topH = topBar?.offsetHeight ?? 0;
+    const infoH = info?.offsetHeight ?? 0;
+    const gap = 16; // breathing room
+
+    const availH = cardH - topH - infoH - gap;
+    const availW = cardW - 32; // side padding
+
+    const style = this._config.clock_style ?? 'digital';
+
+    if (style === 'flip') {
+      // 4 digits + separator: total width ≈ 4 * (0.67 * h) + 24px gaps
+      const fromH = availH;
+      const fromW = (availW - 24) / (4 * 0.67);
+      const flipH = Math.floor(Math.min(fromH, fromW));
+      const flipW = Math.floor(flipH * 0.67);
+      const flipFont = Math.floor(flipH * 0.8);
+      card.style.setProperty('--chrono-flip-height', `${flipH}px`);
+      card.style.setProperty('--chrono-flip-width', `${flipW}px`);
+      card.style.setProperty('--chrono-flip-font-size', `${flipFont}px`);
+    } else {
+      // Digital: "00:00" roughly 2.5 chars-width per 1 height
+      const fromH = availH;
+      const fromW = availW / 2.5;
+      const size = Math.floor(Math.min(fromH, fromW));
+      card.style.setProperty('--chrono-clock-size', `${size}px`);
+    }
   }
 
   /* ---------------------------------------------------------------- */
