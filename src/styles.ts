@@ -405,7 +405,6 @@ export const flipClockStyles = css`
     font-family: var(--chrono-flip-font, 'Roboto Mono', 'Courier New', monospace);
     font-weight: 700;
     color: var(--chrono-flip-color, #e0e0e0);
-    border: 1px solid rgba(255, 255, 255, 0.12);
   }
 
   .flip-face {
@@ -560,6 +559,7 @@ export const flipClockStyles = css`
   /* -- Shadow / depth ----------------------------------------------- */
   .flip-unit {
     box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.12),
       0 2px 6px rgba(0, 0, 0, 0.3),
       0 1px 2px rgba(0, 0, 0, 0.2);
   }
