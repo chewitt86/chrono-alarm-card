@@ -6,6 +6,7 @@ import {
   HassEntity,
   ChronoAlarmCardConfig,
   AlarmConfig,
+  ChipConfig,
 } from './types';
 import {
   DEFAULT_CONFIG,
@@ -219,6 +220,7 @@ export class ChronoAlarmCard extends LitElement {
     return html`
       <ha-card>
         <div class="chrono-card ${mode}">
+          ${this._renderChips()}
           ${this._renderClock()}
           ${this._renderInfo()}
           ${this._renderAlarms()}
@@ -227,6 +229,38 @@ export class ChronoAlarmCard extends LitElement {
           ${this._renderSnoozeDialog()}
         </div>
       </ha-card>
+    `;
+  }
+
+  private _renderChips() {
+    const chips = this._config.chips;
+    if (!chips?.length) return nothing;
+
+    return html`
+      <div class="chips-section">
+        ${chips.map((chip) => {
+          const entity = this.hass.states[chip.entity];
+          if (!entity) return nothing;
+          const friendlyName = (entity.attributes['friendly_name'] as string) ?? chip.entity;
+          const icon = chip.icon ?? (entity.attributes['icon'] as string) ?? '';
+          const label = chip.name ?? friendlyName;
+          const showIcon = chip.show_icon !== false;
+          const showName = chip.show_name !== false;
+          const showState = chip.show_state !== false;
+
+          return html`
+            <div class="chip">
+              ${showIcon && icon
+                ? html`<ha-icon icon=${icon}></ha-icon>`
+                : nothing}
+              ${showName ? html`<span class="chip-name">${label}</span>` : nothing}
+              ${showState
+                ? html`<span class="chip-state">${entity.state}</span>`
+                : nothing}
+            </div>
+          `;
+        })}
+      </div>
     `;
   }
 
@@ -344,13 +378,15 @@ export class ChronoAlarmCard extends LitElement {
               toggle.name ??
               (entity.attributes['friendly_name'] as string) ??
               toggle.entity;
+            const showIcon = toggle.show_icon !== false;
+            const showName = toggle.show_name !== false;
 
             return html`
               <div class="toggle-item">
-                ${toggle.icon
+                ${showIcon && toggle.icon
                   ? html`<ha-icon icon=${toggle.icon}></ha-icon>`
                   : nothing}
-                <span>${label}</span>
+                ${showName ? html`<span>${label}</span>` : nothing}
                 <ha-switch
                   .checked=${isOn}
                   @change=${() => this._toggleAction(toggle.entity)}

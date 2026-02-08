@@ -43,11 +43,12 @@ export class ChronoDigitalClock extends LitElement {
 
   protected render() {
     const { hours, minutes, period } = formatTime(this._time, this.format);
-    const colon = this._colonVisible ? ':' : '\u00A0';
 
     return html`
       <div class="digital-clock">
-        <span class="time-digits">${hours}${colon}${minutes}</span>
+        <span class="time-digits">
+          ${hours}<span class="colon ${this._colonVisible ? '' : 'colon-hidden'}">:</span>${minutes}
+        </span>
         ${period ? html`<span class="period">${period}</span>` : nothing}
       </div>
     `;

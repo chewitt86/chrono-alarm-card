@@ -48,4 +48,5 @@ export const DEFAULT_CONFIG: Omit<ChronoAlarmCardConfig, 'type'> = {
     max_count: 3,
   },
   action_toggles: [],
+  chips: [],
 };

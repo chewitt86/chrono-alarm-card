@@ -39,6 +39,17 @@ export interface ActionToggleConfig {
   name?: string;
   icon?: string;
   show?: boolean;
+  show_name?: boolean;
+  show_icon?: boolean;
+}
+
+export interface ChipConfig {
+  entity: string;
+  icon?: string;
+  name?: string;
+  show_name?: boolean;
+  show_state?: boolean;
+  show_icon?: boolean;
 }
 
 export interface SnoozeConfig {
@@ -70,5 +81,6 @@ export interface ChronoAlarmCardConfig {
   alarms: AlarmConfig[];
   snooze: SnoozeConfig;
   action_toggles: ActionToggleConfig[];
+  chips: ChipConfig[];
   advanced?: AdvancedConfig;
 }

@@ -28,6 +28,10 @@ export const cardStyles = css`
   .chrono-card.panel {
     min-height: 100vh;
     padding: 32px;
+    --chrono-clock-size: clamp(64px, 14vw, 200px);
+    --chrono-flip-width: clamp(48px, 10vw, 140px);
+    --chrono-flip-height: clamp(72px, 15vw, 210px);
+    --chrono-flip-font-size: clamp(44px, 9vw, 130px);
   }
 
   /* -- Clock section ------------------------------------------------ */
@@ -40,7 +44,7 @@ export const cardStyles = css`
     display: flex;
     gap: 16px;
     align-items: center;
-    font-size: 1.1rem;
+    font-size: clamp(0.9rem, 1.8vw, 1.4rem);
     opacity: 0.75;
     margin-bottom: 24px;
     flex-wrap: wrap;
@@ -144,6 +148,39 @@ export const cardStyles = css`
     opacity: 0.7;
   }
 
+  /* -- Chips section ------------------------------------------------ */
+  .chips-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 16px;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--secondary-background-color, rgba(0, 0, 0, 0.06));
+    border-radius: 18px;
+    font-size: 0.85rem;
+    color: var(--primary-text-color);
+    cursor: default;
+    white-space: nowrap;
+  }
+
+  .chip ha-icon {
+    --mdc-icon-size: 16px;
+    opacity: 0.8;
+  }
+
+  .chip .chip-state {
+    font-weight: 500;
+  }
+
   /* -- Overlay (dialogs) -------------------------------------------- */
   .overlay {
     position: absolute;
@@ -240,21 +277,22 @@ export const digitalClockStyles = css`
     letter-spacing: -2px;
   }
 
+  .colon {
+    display: inline-block;
+    width: 0.3em;
+    text-align: center;
+    transition: opacity 0.15s;
+  }
+
+  .colon-hidden {
+    opacity: 0;
+  }
+
   .period {
     font-size: calc(var(--chrono-clock-size, 96px) * 0.28);
     font-weight: 400;
     margin-left: 6px;
     opacity: 0.7;
-  }
-
-  .colon-blink {
-    animation: blink 1s step-end infinite;
-  }
-
-  @keyframes blink {
-    50% {
-      opacity: 0;
-    }
   }
 `;
 
@@ -287,6 +325,10 @@ export const flipClockStyles = css`
     perspective: 300px;
     border-radius: 8px;
     overflow: visible;
+    font-size: var(--chrono-flip-font-size, 60px);
+    font-family: var(--chrono-flip-font, 'Roboto Mono', 'Courier New', monospace);
+    font-weight: 700;
+    color: var(--chrono-flip-color, #e0e0e0);
   }
 
   .flip-face {
@@ -295,13 +337,19 @@ export const flipClockStyles = css`
     width: 100%;
     height: 50%;
     overflow: hidden;
+  }
+
+  /* The digit-text spans the full unit height, clipped by the 50% face */
+  .digit-text {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: var(--chrono-flip-height, 100px);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--chrono-flip-font-size, 60px);
-    font-family: var(--chrono-flip-font, 'Roboto Mono', 'Courier New', monospace);
-    font-weight: 700;
-    color: var(--chrono-flip-color, #e0e0e0);
+    font: inherit;
+    color: inherit;
   }
 
   .upper {
@@ -313,7 +361,7 @@ export const flipClockStyles = css`
   }
 
   .upper .digit-text {
-    transform: translateY(50%);
+    top: 0;
   }
 
   .lower {
@@ -324,7 +372,7 @@ export const flipClockStyles = css`
   }
 
   .lower .digit-text {
-    transform: translateY(-50%);
+    bottom: 0;
   }
 
   /* -- Fold animation panels ---------------------------------------- */
@@ -334,14 +382,12 @@ export const flipClockStyles = css`
     width: 100%;
     height: 50%;
     overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--chrono-flip-font-size, 60px);
-    font-family: var(--chrono-flip-font, 'Roboto Mono', 'Courier New', monospace);
-    font-weight: 700;
-    color: var(--chrono-flip-color, #e0e0e0);
     backface-visibility: hidden;
+  }
+
+  .fold .digit-text {
+    font: inherit;
+    color: inherit;
   }
 
   .fold-upper {
@@ -354,7 +400,7 @@ export const flipClockStyles = css`
   }
 
   .fold-upper .digit-text {
-    transform: translateY(50%);
+    top: 0;
   }
 
   .fold-lower {
@@ -368,7 +414,7 @@ export const flipClockStyles = css`
   }
 
   .fold-lower .digit-text {
-    transform: translateY(-50%);
+    bottom: 0;
   }
 
   @keyframes foldDown {
@@ -680,6 +726,14 @@ export const editorStyles = css`
 
   .editor-field {
     margin-bottom: 12px;
+  }
+
+  .editor-field ha-textfield,
+  .editor-field ha-entity-picker,
+  .editor-field ha-select,
+  .editor-field ha-icon-picker {
+    width: 100%;
+    display: block;
   }
 
   .alarm-block {

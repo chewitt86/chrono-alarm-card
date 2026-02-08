@@ -6,6 +6,7 @@ import {
   ChronoAlarmCardConfig,
   AlarmConfig,
   ActionToggleConfig,
+  ChipConfig,
 } from './types';
 import { DEFAULT_CONFIG, MAX_ALARMS } from './constants';
 import { fireEvent } from './utils';
@@ -86,6 +87,27 @@ export class ChronoAlarmCardEditor extends LitElement {
     this._dispatch();
   }
 
+  private _chipChanged(index: number, key: keyof ChipConfig, value: unknown): void {
+    const chips = [...(this._config.chips ?? [])];
+    chips[index] = { ...chips[index], [key]: value };
+    this._config = { ...this._config, chips };
+    this._dispatch();
+  }
+
+  private _addChip(): void {
+    const chips = [...(this._config.chips ?? [])];
+    chips.push({ entity: '', show_icon: true, show_name: false, show_state: true });
+    this._config = { ...this._config, chips };
+    this._dispatch();
+  }
+
+  private _removeChip(index: number): void {
+    const chips = [...(this._config.chips ?? [])];
+    chips.splice(index, 1);
+    this._config = { ...this._config, chips };
+    this._dispatch();
+  }
+
   /* ---------------------------------------------------------------- */
   /*  Render                                                           */
   /* ---------------------------------------------------------------- */
@@ -96,9 +118,92 @@ export class ChronoAlarmCardEditor extends LitElement {
     return html`
       <div class="editor">
         ${this._renderGeneral()}
+        ${this._renderChips()}
         ${this._renderAlarms()}
         ${this._renderSnooze()}
         ${this._renderToggles()}
+      </div>
+    `;
+  }
+
+  private _renderChips() {
+    const chips = this._config.chips ?? [];
+
+    return html`
+      <div class="editor-section">
+        <div class="section-title">Chips</div>
+
+        ${chips.map(
+          (chip, i) => html`
+            <div class="alarm-block">
+              <div class="alarm-block-header">
+                <span>Chip ${i + 1}</span>
+                <button class="remove-btn" @click=${() => this._removeChip(i)}>
+                  Remove
+                </button>
+              </div>
+
+              <div class="editor-field">
+                <ha-entity-picker
+                  .hass=${this.hass}
+                  .value=${chip.entity ?? ''}
+                  label="Entity"
+                  allow-custom-entity
+                  @value-changed=${(e: CustomEvent) =>
+                    this._chipChanged(i, 'entity', e.detail.value)}
+                ></ha-entity-picker>
+              </div>
+
+              <div class="editor-field">
+                <ha-icon-picker
+                  .hass=${this.hass}
+                  .value=${chip.icon ?? ''}
+                  label="Icon (optional, defaults to entity icon)"
+                  @value-changed=${(e: CustomEvent) =>
+                    this._chipChanged(i, 'icon', e.detail.value)}
+                ></ha-icon-picker>
+              </div>
+
+              <div class="editor-field">
+                <ha-textfield
+                  label="Custom name (optional)"
+                  .value=${chip.name ?? ''}
+                  @input=${(e: InputEvent) =>
+                    this._chipChanged(i, 'name', (e.target as any).value)}
+                ></ha-textfield>
+              </div>
+
+              <div class="editor-row">
+                <label>Show icon</label>
+                <ha-switch
+                  .checked=${chip.show_icon !== false}
+                  @change=${(e: Event) =>
+                    this._chipChanged(i, 'show_icon', (e.target as any).checked)}
+                ></ha-switch>
+              </div>
+
+              <div class="editor-row">
+                <label>Show name</label>
+                <ha-switch
+                  .checked=${chip.show_name !== false}
+                  @change=${(e: Event) =>
+                    this._chipChanged(i, 'show_name', (e.target as any).checked)}
+                ></ha-switch>
+              </div>
+
+              <div class="editor-row">
+                <label>Show state</label>
+                <ha-switch
+                  .checked=${chip.show_state !== false}
+                  @change=${(e: Event) =>
+                    this._chipChanged(i, 'show_state', (e.target as any).checked)}
+                ></ha-switch>
+              </div>
+            </div>
+          `,
+        )}
+
+        <button class="add-btn" @click=${this._addChip}>+ Add Chip</button>
       </div>
     `;
   }
@@ -341,6 +446,24 @@ export class ChronoAlarmCardEditor extends LitElement {
                   @value-changed=${(e: CustomEvent) =>
                     this._toggleChanged(i, 'icon', e.detail.value)}
                 ></ha-icon-picker>
+              </div>
+
+              <div class="editor-row">
+                <label>Show name</label>
+                <ha-switch
+                  .checked=${toggle.show_name !== false}
+                  @change=${(e: Event) =>
+                    this._toggleChanged(i, 'show_name', (e.target as any).checked)}
+                ></ha-switch>
+              </div>
+
+              <div class="editor-row">
+                <label>Show icon</label>
+                <ha-switch
+                  .checked=${toggle.show_icon !== false}
+                  @change=${(e: Event) =>
+                    this._toggleChanged(i, 'show_icon', (e.target as any).checked)}
+                ></ha-switch>
               </div>
 
               <div class="editor-row">
