@@ -108,6 +108,15 @@ export class ChronoAlarmCardEditor extends LitElement {
     this._dispatch();
   }
 
+  private _moveChip(index: number, direction: -1 | 1): void {
+    const chips = [...(this._config.chips ?? [])];
+    const target = index + direction;
+    if (target < 0 || target >= chips.length) return;
+    [chips[index], chips[target]] = [chips[target], chips[index]];
+    this._config = { ...this._config, chips };
+    this._dispatch();
+  }
+
   /* ---------------------------------------------------------------- */
   /*  Render                                                           */
   /* ---------------------------------------------------------------- */
@@ -138,6 +147,18 @@ export class ChronoAlarmCardEditor extends LitElement {
             <div class="alarm-block">
               <div class="alarm-block-header">
                 <span>Chip ${i + 1}</span>
+                <div class="reorder-btns">
+                  <button
+                    ?disabled=${i === 0}
+                    @click=${() => this._moveChip(i, -1)}
+                    title="Move up"
+                  >&#9650;</button>
+                  <button
+                    ?disabled=${i === chips.length - 1}
+                    @click=${() => this._moveChip(i, 1)}
+                    title="Move down"
+                  >&#9660;</button>
+                </div>
                 <button class="remove-btn" @click=${() => this._removeChip(i)}>
                   Remove
                 </button>
@@ -198,6 +219,40 @@ export class ChronoAlarmCardEditor extends LitElement {
                   @change=${(e: Event) =>
                     this._chipChanged(i, 'show_state', (e.target as any).checked)}
                 ></ha-switch>
+              </div>
+
+              <div class="color-row">
+                <label>Color on</label>
+                <input
+                  type="color"
+                  .value=${chip.color_on ?? '#4caf50'}
+                  @input=${(e: InputEvent) =>
+                    this._chipChanged(i, 'color_on', (e.target as any).value)}
+                />
+                <input
+                  type="text"
+                  .value=${chip.color_on ?? ''}
+                  placeholder="#4caf50 or empty for default"
+                  @input=${(e: InputEvent) =>
+                    this._chipChanged(i, 'color_on', (e.target as any).value)}
+                />
+              </div>
+
+              <div class="color-row">
+                <label>Color off</label>
+                <input
+                  type="color"
+                  .value=${chip.color_off ?? '#9e9e9e'}
+                  @input=${(e: InputEvent) =>
+                    this._chipChanged(i, 'color_off', (e.target as any).value)}
+                />
+                <input
+                  type="text"
+                  .value=${chip.color_off ?? ''}
+                  placeholder="#9e9e9e or empty for default"
+                  @input=${(e: InputEvent) =>
+                    this._chipChanged(i, 'color_off', (e.target as any).value)}
+                />
               </div>
             </div>
           `,
@@ -272,21 +327,17 @@ export class ChronoAlarmCardEditor extends LitElement {
           ></ha-switch>
         </div>
 
-        ${cfg.show_weather
-          ? html`
-              <div class="editor-field">
-                <ha-entity-picker
-                  .hass=${this.hass}
-                  .value=${cfg.weather_entity ?? ''}
-                  .includeDomains=${['weather']}
-                  label="Weather entity"
-                  allow-custom-entity
-                  @value-changed=${(e: CustomEvent) =>
-                    this._valueChanged('weather_entity', e.detail.value)}
-                ></ha-entity-picker>
-              </div>
-            `
-          : nothing}
+        <div class="editor-field ${cfg.show_weather ? '' : 'editor-hidden'}">
+          <ha-entity-picker
+            .hass=${this.hass}
+            .value=${cfg.weather_entity ?? ''}
+            .includeDomains=${['weather']}
+            label="Weather entity"
+            allow-custom-entity
+            @value-changed=${(e: CustomEvent) =>
+              this._valueChanged('weather_entity', e.detail.value)}
+          ></ha-entity-picker>
+        </div>
       </div>
     `;
   }

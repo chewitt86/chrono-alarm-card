@@ -31,7 +31,7 @@ export const cardStyles = css`
     --chrono-clock-size: clamp(64px, 14vw, 200px);
     --chrono-flip-width: clamp(48px, 10vw, 140px);
     --chrono-flip-height: clamp(72px, 15vw, 210px);
-    --chrono-flip-font-size: clamp(44px, 9vw, 130px);
+    --chrono-flip-font-size: clamp(58px, 12vw, 170px);
   }
 
   /* -- Clock section ------------------------------------------------ */
@@ -114,6 +114,12 @@ export const cardStyles = css`
   .alarm-item .alarm-days {
     font-size: 0.8rem;
     opacity: 0.6;
+  }
+
+  .alarm-item .alarm-countdown {
+    font-size: 0.75rem;
+    opacity: 0.5;
+    font-style: italic;
   }
 
   .alarm-item .alarm-toggle {
@@ -325,7 +331,7 @@ export const flipClockStyles = css`
     perspective: 300px;
     border-radius: 8px;
     overflow: visible;
-    font-size: var(--chrono-flip-font-size, 60px);
+    font-size: var(--chrono-flip-font-size, 80px);
     font-family: var(--chrono-flip-font, 'Roboto Mono', 'Courier New', monospace);
     font-weight: 700;
     color: var(--chrono-flip-color, #e0e0e0);
@@ -468,7 +474,7 @@ export const flipClockStyles = css`
 
   /* -- Period (AM/PM) ----------------------------------------------- */
   .flip-period {
-    font-size: calc(var(--chrono-flip-font-size, 60px) * 0.3);
+    font-size: calc(var(--chrono-flip-font-size, 80px) * 0.3);
     font-family: var(--chrono-flip-font, 'Roboto Mono', 'Courier New', monospace);
     color: var(--chrono-flip-color, #e0e0e0);
     margin-left: 8px;
@@ -780,5 +786,66 @@ export const editorStyles = css`
 
   .add-btn:hover {
     opacity: 1;
+  }
+
+  .editor-hidden {
+    display: none !important;
+  }
+
+  .reorder-btns {
+    display: flex;
+    gap: 2px;
+    margin-left: auto;
+  }
+
+  .reorder-btns button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 0.9rem;
+    opacity: 0.5;
+    color: var(--primary-text-color);
+  }
+
+  .reorder-btns button:hover {
+    opacity: 1;
+  }
+
+  .reorder-btns button:disabled {
+    opacity: 0.15;
+    cursor: default;
+  }
+
+  .color-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+  }
+
+  .color-row label {
+    font-size: 0.95rem;
+    min-width: 80px;
+  }
+
+  .color-row input[type='color'] {
+    width: 40px;
+    height: 32px;
+    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    border-radius: 6px;
+    padding: 2px;
+    cursor: pointer;
+    background: transparent;
+  }
+
+  .color-row input[type='text'] {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    border-radius: 6px;
+    background: transparent;
+    color: var(--primary-text-color);
+    font-size: 0.85rem;
   }
 `;

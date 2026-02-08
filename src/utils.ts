@@ -129,3 +129,54 @@ export function formatDaysShort(days: DayOfWeek[]): string {
 
   return days.map((d) => labels[d]).join(', ');
 }
+
+/**
+ * Calculate the time remaining until an alarm triggers.
+ * Returns null if the alarm has no active days.
+ */
+export function getTimeUntilAlarm(
+  alarmHours: number,
+  alarmMinutes: number,
+  days: DayOfWeek[],
+): { hours: number; minutes: number } | null {
+  const now = new Date();
+  const todayIdx = now.getDay(); // 0=Sun
+  const currentTotal = now.getHours() * 60 + now.getMinutes();
+  const alarmTotal = alarmHours * 60 + alarmMinutes;
+  const activeDays = days.length > 0 ? days : [...JS_DAY_MAP];
+
+  for (let offset = 0; offset <= 7; offset++) {
+    const checkIdx = (todayIdx + offset) % 7;
+    const checkDay = JS_DAY_MAP[checkIdx];
+
+    if (!activeDays.includes(checkDay)) continue;
+    if (offset === 0 && alarmTotal <= currentTotal) continue;
+
+    const totalMinutes =
+      offset === 0
+        ? alarmTotal - currentTotal
+        : offset * 24 * 60 - currentTotal + alarmTotal;
+
+    return {
+      hours: Math.floor(totalMinutes / 60),
+      minutes: totalMinutes % 60,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Format a countdown into a human-readable string.
+ */
+export function formatCountdown(hours: number, minutes: number): string {
+  if (hours >= 24) {
+    const days = Math.floor(hours / 24);
+    const remHours = hours % 24;
+    return `in ${days}d ${remHours}h`;
+  }
+  if (hours > 0) {
+    return `in ${hours}h ${minutes}m`;
+  }
+  return `in ${minutes}m`;
+}

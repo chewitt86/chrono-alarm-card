@@ -20,6 +20,8 @@ import {
   getAlarmDays,
   parseAlarmTime,
   getCurrentDayKey,
+  getTimeUntilAlarm,
+  formatCountdown,
   fireEvent,
 } from './utils';
 
@@ -247,9 +249,16 @@ export class ChronoAlarmCard extends LitElement {
           const showIcon = chip.show_icon !== false;
           const showName = chip.show_name !== false;
           const showState = chip.show_state !== false;
+          const isOn = entity.state === 'on';
+          const bgColor = isOn
+            ? (chip.color_on || '')
+            : (chip.color_off || '');
+          const chipStyle = bgColor
+            ? `background: ${bgColor}; color: #fff;`
+            : '';
 
           return html`
-            <div class="chip">
+            <div class="chip" style=${chipStyle}>
               ${showIcon && icon
                 ? html`<ha-icon icon=${icon}></ha-icon>`
                 : nothing}
@@ -344,6 +353,18 @@ export class ChronoAlarmCard extends LitElement {
           const daysStr = formatDaysShort(days);
           const name = alarm.name || `Alarm ${i + 1}`;
 
+          // Calculate countdown
+          let countdownStr = '';
+          if (isEnabled && timeEntity) {
+            const parsed = parseAlarmTime(timeEntity.state);
+            if (parsed) {
+              const countdown = getTimeUntilAlarm(parsed.hours, parsed.minutes, days);
+              if (countdown) {
+                countdownStr = formatCountdown(countdown.hours, countdown.minutes);
+              }
+            }
+          }
+
           return html`
             <div
               class="alarm-item ${isEnabled ? '' : 'disabled'}"
@@ -352,6 +373,9 @@ export class ChronoAlarmCard extends LitElement {
               <span class="alarm-name">${name}</span>
               <span class="alarm-time">${timeStr}</span>
               <span class="alarm-days">${daysStr}</span>
+              ${countdownStr
+                ? html`<span class="alarm-countdown">${countdownStr}</span>`
+                : nothing}
               <span class="alarm-toggle" @click=${(e: Event) => this._toggleAlarmEnabled(alarm, e)}>
                 <ha-switch .checked=${isEnabled}></ha-switch>
               </span>

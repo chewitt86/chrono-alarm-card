@@ -50,6 +50,8 @@ export interface ChipConfig {
   show_name?: boolean;
   show_state?: boolean;
   show_icon?: boolean;
+  color_on?: string;
+  color_off?: string;
 }
 
 export interface SnoozeConfig {
