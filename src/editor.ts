@@ -31,6 +31,8 @@ export class ChronoAlarmCardEditor extends LitElement {
     this._config = { ...DEFAULT_CONFIG, ...config } as ChronoAlarmCardConfig;
   }
 
+  private _componentsLoaded = false;
+
   connectedCallback(): void {
     super.connectedCallback();
     void this._loadComponents();
@@ -41,11 +43,31 @@ export class ChronoAlarmCardEditor extends LitElement {
    * Without this, pickers may not render on first editor open.
    */
   private async _loadComponents(): Promise<void> {
-    const helpers = await (window as any).loadCardHelpers?.();
-    if (helpers) {
-      const card = await helpers.createCardElement({ type: 'entity', entity: 'sun.sun' });
-      if (card) card.hass = this.hass;
+    if (this._componentsLoaded) return;
+    if (customElements.get('ha-entity-picker')) {
+      this._componentsLoaded = true;
+      return;
     }
+
+    try {
+      const helpers = await (window as any).loadCardHelpers?.();
+      if (helpers) {
+        const card = await helpers.createCardElement({
+          type: 'entities',
+          entities: ['sun.sun'],
+        });
+        // Trigger the editor element load which pulls in ha-entity-picker
+        if (card?.constructor?.getConfigElement) {
+          card.constructor.getConfigElement();
+        }
+      }
+    } catch {
+      // Ignore — components may already be available
+    }
+
+    this._componentsLoaded = true;
+    // Re-render so upgraded custom elements get their properties set
+    this.requestUpdate();
   }
 
   private _dispatch(): void {
