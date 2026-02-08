@@ -324,6 +324,7 @@ export const digitalClockStyles = css`
     display: flex;
     align-items: baseline;
     justify-content: center;
+    position: relative;
     font-family: var(--chrono-font-family, 'Segoe UI', system-ui, sans-serif);
     font-weight: 300;
     line-height: 1;
@@ -348,10 +349,14 @@ export const digitalClockStyles = css`
   }
 
   .period {
+    position: absolute;
+    left: 100%;
+    bottom: 0;
+    margin-left: 6px;
     font-size: calc(var(--chrono-clock-size, 96px) * 0.28);
     font-weight: 400;
-    margin-left: 6px;
     opacity: 0.7;
+    white-space: nowrap;
   }
 `;
 

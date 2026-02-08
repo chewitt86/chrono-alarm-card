@@ -314,6 +314,7 @@ function t(t,e,i,s){var o,n=arguments.length,a=n<3?e:null===s?s=Object.getOwnPro
     display: flex;
     align-items: baseline;
     justify-content: center;
+    position: relative;
     font-family: var(--chrono-font-family, 'Segoe UI', system-ui, sans-serif);
     font-weight: 300;
     line-height: 1;
@@ -338,10 +339,14 @@ function t(t,e,i,s){var o,n=arguments.length,a=n<3?e:null===s?s=Object.getOwnPro
   }
 
   .period {
+    position: absolute;
+    left: 100%;
+    bottom: 0;
+    margin-left: 6px;
     font-size: calc(var(--chrono-clock-size, 96px) * 0.28);
     font-weight: 400;
-    margin-left: 6px;
     opacity: 0.7;
+    white-space: nowrap;
   }
 `,ft=a`
   :host {
