@@ -74,9 +74,6 @@ export class ChronoFlipClock extends LitElement {
     return html`
       <div class="flip-clock">
         <div class="flip-group">
-          ${this._period
-            ? html`<span class="flip-period">${this._period}</span>`
-            : nothing}
           ${this._renderUnit(d[0], p[0], 0)}
           ${this._renderUnit(d[1], p[1], 1)}
         </div>
@@ -97,6 +94,9 @@ export class ChronoFlipClock extends LitElement {
 
     return html`
       <div class="flip-unit">
+        ${index === 0 && this._period
+          ? html`<span class="flip-period">${this._period}</span>`
+          : nothing}
         <!-- Static upper half: always shows NEW digit -->
         <div class="flip-face upper">
           <span class="digit-text">${current}</span>

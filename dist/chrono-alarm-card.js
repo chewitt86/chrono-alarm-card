@@ -530,14 +530,14 @@ function t(t,e,i,o){var s,n=arguments.length,a=n<3?e:null===o?o=Object.getOwnPro
   /* -- Period (AM/PM) ----------------------------------------------- */
   .flip-period {
     position: absolute;
-    top: -2px;
-    left: 0;
-    font-size: calc(var(--chrono-flip-font-size, 80px) * 0.16);
+    top: 4px;
+    left: 4px;
+    font-size: calc(var(--chrono-flip-font-size, 80px) * 0.14);
     font-family: var(--chrono-flip-font, 'Roboto Mono', 'Courier New', monospace);
     color: var(--chrono-flip-color, #e0e0e0);
-    opacity: 0.7;
+    opacity: 0.6;
     line-height: 1;
-    transform: translateY(-100%);
+    z-index: 6;
     pointer-events: none;
   }
 
@@ -934,7 +934,6 @@ function t(t,e,i,o){var s,n=arguments.length,a=n<3?e:null===o?o=Object.getOwnPro
     `}};Ut.styles=gt,t([pt()],Ut.prototype,"format",void 0),t([ut()],Ut.prototype,"_time",void 0),t([ut()],Ut.prototype,"_colonVisible",void 0),Ut=t([ct("chrono-digital-clock")],Ut);let It=class extends rt{constructor(){super(...arguments),this.format="12h",this._time=new Date,this._digits="0000",this._prevDigits="0000",this._flipping=new Set,this._period=""}connectedCallback(){super.connectedCallback();const{hours:t,minutes:e,period:i}=Et(new Date,this.format);this._digits=`${t}${e}`,this._prevDigits=this._digits,this._period=i??"",this._startTick()}disconnectedCallback(){super.disconnectedCallback(),this._stopTick()}_startTick(){this._interval=window.setInterval(()=>this._tick(),1e3)}_stopTick(){this._interval&&clearInterval(this._interval),this._animTimeout&&clearTimeout(this._animTimeout)}_tick(){this._time=new Date;const{hours:t,minutes:e,period:i}=Et(this._time,this.format),o=`${t}${e}`;if(this._period=i??"",o===this._digits)return;const s=new Set;for(let t=0;t<o.length;t++)o[t]!==this._digits[t]&&s.add(t);this._prevDigits=this._digits,this._digits=o,this._flipping=s,this._animTimeout&&clearTimeout(this._animTimeout),this._animTimeout=window.setTimeout(()=>{this._flipping=new Set},650)}render(){const t=this._digits,e=this._prevDigits;return B`
       <div class="flip-clock">
         <div class="flip-group">
-          ${this._period?B`<span class="flip-period">${this._period}</span>`:q}
           ${this._renderUnit(t[0],e[0],0)}
           ${this._renderUnit(t[1],e[1],1)}
         </div>
@@ -949,6 +948,7 @@ function t(t,e,i,o){var s,n=arguments.length,a=n<3?e:null===o?o=Object.getOwnPro
       </div>
     `}_renderUnit(t,e,i){const o=this._flipping.has(i);return B`
       <div class="flip-unit">
+        ${0===i&&this._period?B`<span class="flip-period">${this._period}</span>`:q}
         <!-- Static upper half: always shows NEW digit -->
         <div class="flip-face upper">
           <span class="digit-text">${t}</span>

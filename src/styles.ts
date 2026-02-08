@@ -545,14 +545,14 @@ export const flipClockStyles = css`
   /* -- Period (AM/PM) ----------------------------------------------- */
   .flip-period {
     position: absolute;
-    top: -2px;
-    left: 0;
-    font-size: calc(var(--chrono-flip-font-size, 80px) * 0.16);
+    top: 4px;
+    left: 4px;
+    font-size: calc(var(--chrono-flip-font-size, 80px) * 0.14);
     font-family: var(--chrono-flip-font, 'Roboto Mono', 'Courier New', monospace);
     color: var(--chrono-flip-color, #e0e0e0);
-    opacity: 0.7;
+    opacity: 0.6;
     line-height: 1;
-    transform: translateY(-100%);
+    z-index: 6;
     pointer-events: none;
   }
 
