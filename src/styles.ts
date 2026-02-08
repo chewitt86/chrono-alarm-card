@@ -37,14 +37,10 @@ export const cardStyles = css`
 
   /* -- Top bar (alarm icon left, chips right) ----------------------- */
   .top-bar {
-    position: absolute;
-    top: 12px;
-    left: 20px;
-    right: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    z-index: 5;
+    width: 100%;
   }
 
   .alarm-menu-btn {
@@ -77,11 +73,9 @@ export const cardStyles = css`
 
   /* -- Clock section ------------------------------------------------ */
   .clock-section {
-    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 0;
     width: 100%;
   }
 
@@ -98,18 +92,14 @@ export const cardStyles = css`
 
   /* -- Info section (date, day, weather) ----------------------------- */
   .info-section {
-    position: absolute;
-    bottom: 12px;
-    left: 20px;
-    right: 20px;
     display: flex;
     gap: 16px;
     align-items: center;
+    justify-content: center;
     font-size: clamp(0.9rem, 2.5vh, 1.6rem);
     opacity: 0.75;
-    flex-wrap: wrap;
-    justify-content: center;
-    z-index: 5;
+    width: 100%;
+    text-align: center;
   }
 
   .info-section .separator {
