@@ -27,32 +27,21 @@ export const cardStyles = css`
 
   .chrono-card.panel {
     min-height: 100vh;
-    padding: 16px 24px;
-    --chrono-clock-size: clamp(80px, 22vw, 280px);
-    --chrono-flip-width: clamp(56px, 14vw, 180px);
-    --chrono-flip-height: clamp(84px, 22vw, 270px);
-    --chrono-flip-font-size: clamp(68px, 17vw, 220px);
+    height: 100vh;
+    padding: 12px 20px;
+    --chrono-clock-size: min(45vh, 40vw);
+    --chrono-flip-width: min(28vh, 18vw);
+    --chrono-flip-height: min(42vh, 26vw);
+    --chrono-flip-font-size: min(34vh, 21vw);
   }
 
   /* -- Top bar (alarm icon left, chips right) ----------------------- */
   .top-bar {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     width: 100%;
-    position: absolute;
-    top: 12px;
-    left: 0;
-    right: 0;
-    padding: 0 20px;
-    box-sizing: border-box;
-    z-index: 2;
-    pointer-events: none;
-  }
-
-  .top-bar-left,
-  .top-bar-right {
-    pointer-events: auto;
+    flex-shrink: 0;
   }
 
   .alarm-menu-btn {
@@ -85,7 +74,11 @@ export const cardStyles = css`
 
   /* -- Clock section ------------------------------------------------ */
   .clock-section {
-    margin-bottom: 8px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
   }
 
   /* -- Alarms panel (overlay) --------------------------------------- */
@@ -104,11 +97,12 @@ export const cardStyles = css`
     display: flex;
     gap: 16px;
     align-items: center;
-    font-size: clamp(0.9rem, 2vw, 1.5rem);
+    font-size: clamp(0.9rem, 2.5vh, 1.6rem);
     opacity: 0.75;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
     flex-wrap: wrap;
     justify-content: center;
+    flex-shrink: 0;
   }
 
   .info-section .separator {
