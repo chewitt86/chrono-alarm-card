@@ -30,12 +30,19 @@ function t(t,e,i,s){var o,n=arguments.length,a=n<3?e:null===s?s=Object.getOwnPro
     --chrono-flip-font-size: min(34vh, 21vw);
   }
 
+  /* -- Clock group (wraps top bar + clock + info to share width) ---- */
+  .clock-group {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   /* -- Top bar (alarm icon left, chips right) ----------------------- */
   .top-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 100%;
+    margin-bottom: 4px;
   }
 
   .alarm-menu-btn {
@@ -71,7 +78,6 @@ function t(t,e,i,s){var o,n=arguments.length,a=n<3?e:null===s?s=Object.getOwnPro
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
   }
 
   /* -- Alarms panel (overlay) --------------------------------------- */
@@ -93,8 +99,7 @@ function t(t,e,i,s){var o,n=arguments.length,a=n<3?e:null===s?s=Object.getOwnPro
     justify-content: center;
     font-size: clamp(0.9rem, 2.5vh, 1.6rem);
     opacity: 0.75;
-    width: 100%;
-    text-align: center;
+    margin-top: 4px;
   }
 
   .info-section .separator {
@@ -1319,9 +1324,11 @@ function t(t,e,i,s){var o,n=arguments.length,a=n<3?e:null===s?s=Object.getOwnPro
       </ha-card>`;const t=this._config.mode??"panel";return F`
       <ha-card>
         <div class="chrono-card ${t}">
-          ${this._renderTopBar()}
-          ${this._renderClock()}
-          ${this._renderInfo()}
+          <div class="clock-group">
+            ${this._renderTopBar()}
+            ${this._renderClock()}
+            ${this._renderInfo()}
+          </div>
           ${this._renderToggles()}
           ${this._renderAlarmsPanel()}
           ${this._renderAlarmDialog()}

@@ -224,9 +224,11 @@ export class ChronoAlarmCard extends LitElement {
     return html`
       <ha-card>
         <div class="chrono-card ${mode}">
-          ${this._renderTopBar()}
-          ${this._renderClock()}
-          ${this._renderInfo()}
+          <div class="clock-group">
+            ${this._renderTopBar()}
+            ${this._renderClock()}
+            ${this._renderInfo()}
+          </div>
           ${this._renderToggles()}
           ${this._renderAlarmsPanel()}
           ${this._renderAlarmDialog()}
